@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrange The Algorithm</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- ================= HOME ================= -->
+<div id="home" class="center-screen">
+    <h1>Arrange The Algorithm</h1>
+
+    <input type="text" id="playerName" placeholder="Enter your name...">
+
+    <button id="startBtn" class="btn">Start Game</button>
+    <button id="openSettingsHome" class="btn">⚙️ Settings</button>
+</div>
+
+<!-- ================= GAME ================= -->
+<div id="game" class="hidden">
+
+<header class="top">
+    <div id="heart">❤️❤️❤️</div>
+
+    <div class="center-info">
+        <h2 id="level">Level 1</h2>
+        <div id="time">01:00</div>
+    </div>
+
+    <div class="right-info">
+        ⭐ <span id="score">0</span>
+        <button id="openSettingsGame">⚙️</button>
+    </div>
+</header>
+
+<div class="board">
+    <div id="slots"></div>
+    <div id="steps"></div>
+</div>
+
+<button id="checkBtn" class="btn check">Check Answer</button>
+
+</div>
+
+<!-- ================= SETTINGS ================= -->
+<div id="settings" class="modal hidden">
+    <div class="box" id="settingsContent"></div>
+</div>
+
+<!-- ================= RESULT ================= -->
+<div id="result" class="modal hidden">
+    <div class="box">
+        <h2 id="resultTitle"></h2>
+        <div class="actions">
+            <button id="retryBtn">🔄</button>
+            <button id="settingsBtn">⚙️</button>
+            <button id="nextBtn">➡</button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= AUDIO ================= -->
+<audio id="bg" src="backsound.mp3" loop></audio>
+<audio id="next" src="next_level.mp3"></audio>
+<audio id="win" src="win.mp3"></audio>
+<audio id="lose" src="lose.mp3"></audio>
+
+<script src="script.js"></script>
+</body>
+</html>
+
