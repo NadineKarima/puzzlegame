@@ -3,18 +3,18 @@ document.addEventListener("DOMContentLoaded",()=>{
     // ==================================================
     // STATE GAME
     // ==================================================
-    let level = 1;          // level sekarang
-    let score = 0;          // skor pemain
-    let lives = 3;          // nyawa
-    let time = 60;          // waktu level
-    let timer = null;       // interval timer
-    let correct = [];       // jawaban urutan benar
-    let dragItem = null;    // item yang sedang di drag
-    let soundOn = true;     // status sound
-    let isPaused = false;   // pause saat settings dibuka
+    let level = 1;
+    let score = 0;
+    let lives = 3;
+    let time = 60;
+    let timer = null;
+    let correct = [];
+    let dragItem = null;
+    let soundOn = true;
+    let isPaused = false;
 
     // ==================================================
-    // AMBIL ELEMENT HTML
+    // ELEMENT HTML
     // ==================================================
     const home = document.getElementById("home");
     const game = document.getElementById("game");
@@ -38,18 +38,14 @@ document.addEventListener("DOMContentLoaded",()=>{
     const openSettingsHome = document.getElementById("openSettingsHome");
     const openSettingsGame = document.getElementById("openSettingsGame");
 
-    // ==================================================
-    // RESULT MODAL
-    // ==================================================
+    // RESULT
     const result = document.getElementById("result");
     const resultTitle = document.getElementById("resultTitle");
     const retryBtn = document.getElementById("retryBtn");
     const nextBtn = document.getElementById("nextBtn");
     const settingsBtn = document.getElementById("settingsBtn");
 
-    // ==================================================
     // AUDIO
-    // ==================================================
     const bg = document.getElementById("bg");
     const nextSound = document.getElementById("next");
     const winSound = document.getElementById("win");
@@ -76,28 +72,23 @@ document.addEventListener("DOMContentLoaded",()=>{
     // ==================================================
     function startGame(){
 
-        // cek nama pemain
         if(playerName.value.trim() === ""){
             alert("Enter your name first!");
             return;
         }
 
-        // pindah dari home ke game
         home.classList.add("hidden");
         game.classList.remove("hidden");
 
-        // reset data game
         level = 1;
         score = 0;
         lives = 3;
 
-        // play backsound
         if(soundOn){
             bg.currentTime = 0;
             bg.play().catch(()=>{});
         }
 
-        // load level pertama
         loadLevel();
     }
 
@@ -115,23 +106,29 @@ document.addEventListener("DOMContentLoaded",()=>{
         slots.innerHTML = "";
         steps.innerHTML = "";
 
-        // =============================
-        // BUAT SLOT JAWABAN
-        // =============================
+        // ---------- DROP AREA STEP ASLI ----------
+        steps.ondragover = e => e.preventDefault();
+
+        steps.ondrop = ()=>{
+            if(!dragItem) return;
+            steps.appendChild(dragItem);
+            dragItem = null;
+        };
+
+        // ==================================================
+        // BUAT SLOT
+        // ==================================================
         correct.forEach(()=>{
 
             let s = document.createElement("div");
             s.className = "slot";
 
-            // izinkan drop
             s.ondragover = e => e.preventDefault();
 
-            // saat drop
             s.ondrop = ()=>{
 
                 if(!dragItem) return;
 
-                // kalau slot sudah ada isi
                 if(s.firstChild){
                     steps.appendChild(s.firstChild);
                 }
@@ -143,9 +140,9 @@ document.addEventListener("DOMContentLoaded",()=>{
             slots.appendChild(s);
         });
 
-        // =============================
+        // ==================================================
         // BUAT STEP ACAK
-        // =============================
+        // ==================================================
         [...correct].sort(()=>Math.random()-0.5).forEach(text=>{
 
             let d = document.createElement("div");
@@ -153,20 +150,17 @@ document.addEventListener("DOMContentLoaded",()=>{
             d.innerText = text;
             d.draggable = true;
 
-            // desktop drag
+            // DESKTOP
             d.ondragstart = ()=> dragItem = d;
             d.ondragend = ()=> dragItem = null;
 
-            // ==================================
+            // ==================================================
             // TOUCHSCREEN SUPPORT
-            // ==================================
-
-            // saat disentuh
+            // ==================================================
             d.addEventListener("touchstart",()=>{
                 dragItem = d;
             });
 
-            // saat digeser
             d.addEventListener("touchmove",(e)=>{
 
                 if(!dragItem) return;
@@ -182,13 +176,15 @@ document.addEventListener("DOMContentLoaded",()=>{
                 d.style.pointerEvents = "none";
             });
 
-            // saat dilepas
             d.addEventListener("touchend",(e)=>{
 
                 let t = e.changedTouches[0];
                 let target = document.elementFromPoint(t.clientX,t.clientY);
-                let slot = target?.closest(".slot");
 
+                let slot = target?.closest(".slot");
+                let stepArea = target?.closest("#steps");
+
+                // kalau ke slot
                 if(slot){
 
                     if(slot.firstChild){
@@ -196,6 +192,11 @@ document.addEventListener("DOMContentLoaded",()=>{
                     }
 
                     slot.appendChild(d);
+                }
+
+                // kalau ke tempat awal
+                else if(stepArea){
+                    steps.appendChild(d);
                 }
 
                 // reset style
@@ -224,10 +225,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 
         timer = setInterval(()=>{
 
-            // pause saat settings dibuka
             if(isPaused) return;
 
-            // waktu habis
             if(time <= 0){
                 clearInterval(timer);
                 lose();
@@ -252,48 +251,27 @@ document.addEventListener("DOMContentLoaded",()=>{
         let benar = true;
 
         document.querySelectorAll(".slot").forEach((slot,i)=>{
-
             if(!slot.firstChild || slot.firstChild.innerText !== correct[i]){
                 benar = false;
             }
         });
 
-        // =============================
-        // JIKA BENAR
-        // =============================
         if(benar){
 
             score += 10;
             level++;
 
-            // level terakhir selesai
             if(level > levels.length){
-
                 if(soundOn) winSound.play();
-
                 showResult("win");
                 updateUI();
                 return;
             }
 
-            // level biasa
             if(soundOn) nextSound.play();
 
             showResult("complete");
-        }
-
-        // =============================
-        // JIKA SALAH
-        // =============================
-        else{
-
-            // animasi getar
-            document.querySelector(".board").classList.add("shake");
-
-            setTimeout(()=>{
-                document.querySelector(".board").classList.remove("shake");
-            },300);
-
+        }else{
             lose();
         }
 
@@ -301,13 +279,12 @@ document.addEventListener("DOMContentLoaded",()=>{
     }
 
     // ==================================================
-    // LOSE / KURANG NYAWA
+    // LOSE
     // ==================================================
     function lose(){
 
         lives--;
 
-        // nyawa habis
         if(lives <= 0){
 
             if(soundOn){
@@ -316,10 +293,8 @@ document.addEventListener("DOMContentLoaded",()=>{
             }
 
             showResult("lose");
-        }
 
-        // masih ada nyawa
-        else{
+        }else{
             loadLevel();
         }
 
@@ -327,7 +302,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     }
 
     // ==================================================
-    // RESULT MODAL
+    // RESULT
     // ==================================================
     function showResult(type){
 
@@ -339,51 +314,27 @@ document.addEventListener("DOMContentLoaded",()=>{
         nextBtn.style.display = "none";
         settingsBtn.style.display = "none";
 
-        // level complete
         if(type === "complete"){
             resultTitle.innerText = "LEVEL COMPLETE 🎉";
-
             retryBtn.style.display = "block";
-            settingsBtn.style.display = "block";
             nextBtn.style.display = "block";
+            settingsBtn.style.display = "block";
         }
 
-        // kalah
         if(type === "lose"){
             resultTitle.innerText = "YOU LOSE 😢";
-
             settingsBtn.style.display = "block";
             settingsBtn.innerText = "🔄 Retry";
             settingsBtn.onclick = ()=> location.reload();
         }
 
-        // menang semua level
         if(type === "win"){
             resultTitle.innerText = "🏆 CONGRATULATIONS";
-
             settingsBtn.style.display = "block";
             settingsBtn.innerText = "🏠 Home";
             settingsBtn.onclick = ()=> location.reload();
         }
     }
-
-    // ==================================================
-    // BUTTON RESULT
-    // ==================================================
-    retryBtn.addEventListener("click",()=>{
-        result.classList.add("hidden");
-        loadLevel();
-    });
-
-    nextBtn.addEventListener("click",()=>{
-        result.classList.add("hidden");
-        loadLevel();
-    });
-
-    settingsBtn.addEventListener("click",()=>{
-        result.classList.add("hidden");
-        openSettings();
-    });
 
     // ==================================================
     // SETTINGS
@@ -402,24 +353,20 @@ document.addEventListener("DOMContentLoaded",()=>{
 
         settings.classList.remove("hidden");
 
-        // toggle sound
         document.getElementById("soundBtn").onclick = ()=>{
             soundOn = !soundOn;
             bg.muted = !soundOn;
             openSettings();
         };
 
-        // dark mode
         document.getElementById("themeBtn").onclick = ()=>{
             document.body.classList.toggle("dark");
         };
 
-        // kembali home
         document.getElementById("homeBtn").onclick = ()=>{
             location.reload();
         };
 
-        // tutup settings
         document.getElementById("closeBtn").onclick = closeSettings;
     }
 
@@ -438,20 +385,34 @@ document.addEventListener("DOMContentLoaded",()=>{
     }
 
     // ==================================================
-    // BUTTON CLICK
+    // EVENT BUTTON
     // ==================================================
     startBtn.addEventListener("click", startGame);
     checkBtn.addEventListener("click", checkAnswer);
+
+    retryBtn.addEventListener("click",()=>{
+        result.classList.add("hidden");
+        loadLevel();
+    });
+
+    nextBtn.addEventListener("click",()=>{
+        result.classList.add("hidden");
+        loadLevel();
+    });
+
+    settingsBtn.addEventListener("click",()=>{
+        result.classList.add("hidden");
+        openSettings();
+    });
 
     openSettingsHome.addEventListener("click", openSettings);
     openSettingsGame.addEventListener("click", openSettings);
 
     // ==================================================
-    // KEYBOARD CONTROL
+    // KEYBOARD
     // ==================================================
     document.addEventListener("keydown",(e)=>{
 
-        // ENTER = Start / Check
         if(e.key === "Enter"){
 
             if(!home.classList.contains("hidden")){
@@ -467,7 +428,6 @@ document.addEventListener("DOMContentLoaded",()=>{
             }
         }
 
-        // S = buka / tutup settings (hanya saat game)
         if(e.key.toLowerCase() === "s" && !game.classList.contains("hidden")){
 
             if(settings.classList.contains("hidden")){
@@ -479,14 +439,12 @@ document.addEventListener("DOMContentLoaded",()=>{
     });
 
     // ==================================================
-    // AUTOPLAY SOUND SAAT USER KLIK PERTAMA
+    // AUTOPLAY
     // ==================================================
     document.body.addEventListener("click",()=>{
-
         if(soundOn){
             bg.play().catch(()=>{});
         }
-
     },{once:true});
 
 });
